@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BIE Taxonomy</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
+  <link rel="stylesheet" href="leaflet.label.css" />
+  <link rel="stylesheet" href="my.leaflet.label.css" />
+</head>
+<body>
+  <div id="map" style="width: 1000px; height: 700px; background: #000;"></div>
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+  <script src="leaflet.label.js"></script>
+  <script>
+    var ajaxRequest;
+    var plotlayers=[];
+    ajaxRequest=getXmlHttpObject();
+    if (ajaxRequest==null) {
+	alert ("This browser does not support HTTP Request");
+	return;
+    }
+    var myIcon = L.icon({
+      iconUrl: 'images/marker-icon.png',
+      shadowUrl: 'images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      labelAnchor: [0, -10],
+      popupAnchor: [1,-20],
+      shadowSize:[41,41]
+    });
+    var map = L.map('map', {
+    maxZoom: 20,
+    minZoom: 13,
+    continuousWorld: true,
+    //zoomAnimation: false,
+    crs: L.CRS.Simple
+    }).setView([0, 0], 13);
+
+    var zoomRank={20:"genus/tribe", 19:"family", 18:"order", 17:"order", 16:"class", 15:"class", 14:"phylum", 13:"phylum"};
+
+    var southWest = map.unproject([0, 64000], map.getMaxZoom());
+    var northEast = map.unproject([64000, 0], map.getMaxZoom());
+    map.setMaxBounds(new L.LatLngBounds(southWest, northEast));
+
+    L.tileLayer('http://dl.dropboxusercontent.com/u/196500339/site/map-tiles/{z}/map_{x}_{y}.png', {
+    attribution: 'Taxonomy viewer by <a href="http://untan.gl">Science Untangled</a>, data from <a href="http://ala.org.au/">ALA</a> | Labels showing rank: <span id="taxrank">phylum</span>',
+    maxZoom: 20,
+    tileSize: 500,
+    }).addTo(map);
+    fetchLabels();
+
+    function updateZoomRank(e) {
+      var span=document.getElementById('taxrank');
+      while (span.firstChild) {
+        span.removeChild(span.firstChild);
+      }
+      span.appendChild(document.createTextNode(zoomRank[map.getZoom()]));
+    }
+    function fetchLabels(e) {
+      var bnds=map.getBounds();
+//      console.log(map.project(bnds.getSouthWest()).x);
+//      console.log(map.project(bnds.getNorthEast()).x);
+//    console.log(map.project(map.getCenter()).x);
+//587.196537728,416
+      var xmin=(bnds.getSouthWest().lng-southWest.lng)/(northEast.lng-southWest.lng);
+      var xmax=(bnds.getNorthEast().lng-southWest.lng)/(northEast.lng-southWest.lng);
+      var ymin=(bnds.getSouthWest().lat-southWest.lat)/(northEast.lat-southWest.lat);
+      var ymax=(bnds.getNorthEast().lat-southWest.lat)/(northEast.lat-southWest.lat);
+      console.log("[" + xmin + " " + xmax + " " + ymin + " " + ymax + "]");
+      var msg="labels?xmin="+xmin+"&xmax="+xmax+"&ymin="+ymin+"&ymax="+ymax+"&z="+map.getZoom();
+      ajaxRequest.onreadystatechange = showLabels;
+      ajaxRequest.open('GET', msg, true);
+      ajaxRequest.send(null);
+    }
+
+    function showLabels() {
+	// if AJAX returned a list of markers, add them to the map
+	if (ajaxRequest.readyState==4) {
+		//use the info here that was returned
+		if (ajaxRequest.status==200) {
+//    console.log(ajaxRequest.responseText);
+			var plotlist=JSON.parse(JSON.parse(ajaxRequest.responseText)); // why does this need two parses? I have no idea
+			removeMarkers();
+			for (i=0;i<plotlist.length;i++) {
+				console.log(plotlist[i].name + ": " + plotlist[i].x + "," + plotlist[i].y);
+				var plotll = new L.LatLng(plotlist[i].y*(northEast.lat-southWest.lat)+southWest.lat,plotlist[i].x*(northEast.lng-southWest.lng)+southWest.lng,true);
+				var plotmark=L.marker(plotll, {icon:myIcon, riseOnHover: true}).bindLabel(plotlist[i].name, { noHide: true }).addTo(map);
+//				var plotmark=L.marker(plotll).bindLabel(plotlist[i].name, { noHide: true }).addTo(map);
+				//var plotmark = new L.Marker(plotll);
+				//plotmark.data=plotlist[i];
+				//map.addLayer(plotmark);
+				plotmark.bindPopup("<strong>"+plotlist[i].name+"</strong><ul><li><a target=\"_blank\" href=\"http://bie.ala.org.au/species/"+plotlist[i].guid+"\">ALA page</a></li></ul>");
+				plotlayers.push(plotmark);
+			}
+		}
+	}
+}
+    map.on('zoomend', updateZoomRank);
+    map.on('zoomend', fetchLabels);
+    map.on('moveend', fetchLabels);
+    map.on('resize', fetchLabels);
+
+    function getXmlHttpObject() {
+	if (window.XMLHttpRequest) { return new XMLHttpRequest(); }
+	if (window.ActiveXObject)  { return new ActiveXObject("Microsoft.XMLHTTP"); }
+	return null;
+    }
+
+function removeMarkers() {
+	for (i=0;i<plotlayers.length;i++) {
+		map.removeLayer(plotlayers[i]);
+	}
+	plotlayers=[];
+}
+
+  </script>
+</body>
+</html>

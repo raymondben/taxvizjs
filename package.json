@@ -1,0 +1,22 @@
+{
+  "name": "taxvizjs",
+  "version": "0.0.1",
+  "description": "Visualization of ALA taxonomic data",
+  "main": "taxviz.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/raymondben/taxvizjs"
+  },
+  "author": "Ben Raymond",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/raymondben/taxvizjs/issues"
+  },
+  "homepage": "https://github.com/raymondben/taxvizjs",
+  "dependencies": {
+    "fast-csv": "0.0.3"
+  }
+}

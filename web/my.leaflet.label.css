@@ -1,0 +1,5 @@
+.leaflet-label {
+	border-width: 2px;
+	font: 10px/14px "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-weight: bold;
+}
