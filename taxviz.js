@@ -6,6 +6,7 @@ var csv = require("fast-csv");
 var allrecords=[];
 var show_debug=false;
 var webdir=process.cwd()+"/web/";
+var webport = Number(process.env.PORT || 8081);
 
 // set up web server
 var webserver = http.createServer(webrequest);
@@ -35,8 +36,8 @@ csv(webdir+"labels_animalia.csv",{headers:true})
  .on("end", function(){
      if (show_debug) console.log("done");
      // start the web server now that we have the data loaded
-     webserver.listen(8081, function() {
-	 if (show_debug) console.log("Server started on port 8081");
+     webserver.listen(webport, function() {
+	 if (show_debug) console.log("Server started on port " + webport);
      });
  })
  .parse();
