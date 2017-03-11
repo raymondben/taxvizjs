@@ -45,7 +45,7 @@
     var northEast = map.unproject([64000, 0], map.getMaxZoom());
     map.setMaxBounds(new L.LatLngBounds(southWest, northEast));
 
-    L.tileLayer('https://dl.dropboxusercontent.com/u/196500339/site/map-tiles/{z}/map_{x}_{y}.png', {
+    L.tileLayer('https://raymondben.github.io/taxvizjs/map-tiles/{z}/map_{x}_{y}.png', {
 	attribution: 'Taxonomy viewer by <a href="http://untan.gl/articles/2014/01/29_visualizing-the-taxonomic-constellation.html">Science Untangled</a>, data from <a href="http://ala.org.au/">ALA</a> | Labels showing rank: <span id="taxrank">phylum</span>',
 	maxZoom: 20,
 	tileSize: 500,
